@@ -1,35 +1,97 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useState, useEffect } from "react";
+import "./App.css";
+import TodoView from "./components/TodoListView";
+import axios from "axios";
 
 function App() {
-  const [count, setCount] = useState(0)
+	const [todoList, setTodoList] = useState([]);
+	const [title, setTitle] = useState("");
+	const [desc, setDesc] = useState("");
 
-  return (
-    <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+	// Read all todos
+	useEffect(() => {
+		axios.get("http://localhost:8000/api/todo").then((res) => {
+			setTodoList(res.data);
+		});
+	}, []);
+
+	// Post a todo
+	const addTodoHandler = () => {
+		axios
+			.post("http://localhost:8000/api/todo/", {
+				title: title,
+				description: desc,
+			})
+			.then((res) => {
+				const newTodo = res.data;
+				const updatedTodoList = [...todoList, newTodo];
+				setTodoList(updatedTodoList);
+			});
+	};
+
+	const deleteTodoHandler = (title) => {
+		axios.delete(`http://localhost:8000/api/todo/${title}`).then((res) => {
+			const newTodoList = todoList.filter((item) => item.title !== title);
+			setTodoList(newTodoList);
+		});
+	};
+
+	return (
+		<>
+			<div
+				className="App list-group-item  justify-content-center align-items-center mx-auto"
+				style={{
+					width: "400px",
+					backgroundColor: "white",
+					marginTop: "15px",
+				}}
+			>
+				<h1
+					className="card text-white bg-primary mb-1"
+					styleName="max-width: 20rem;"
+				>
+					Task Manager
+				</h1>
+				<h6 className="card text-white bg-primary mb-3">
+					FASTAPI - React - MongoDB
+				</h6>
+				<div className="card-body">
+					<h5 className="card text-white bg-dark mb-3">
+						Add Your Task
+					</h5>
+					<span className="card-text">
+						<input
+							className="mb-2 form-control titleIn"
+							onChange={(event) => setTitle(event.target.value)}
+							placeholder="Title"
+						/>
+						<input
+							className="mb-2 form-control desIn"
+							onChange={(event) => setDesc(event.target.value)}
+							placeholder="Description"
+						/>
+						<button
+							className="btn btn-outline-primary mx-2 mb-3"
+							style={{
+								borderRadius: "50px",
+								"font-weight": "bold",
+							}}
+							onClick={addTodoHandler}
+						>
+							Add Task
+						</button>
+					</span>
+					<h5 className="card text-white bg-dark mb-3">Your Tasks</h5>
+					<div>
+						<TodoView todoList={todoList} deleteTodo={deleteTodoHandler}/>
+					</div>
+				</div>
+				<h6 className="card text-dark bg-warning py-1 mb-0">
+					Copyright 2021, All rights reserved &copy;
+				</h6>
+			</div>
+		</>
+	);
 }
 
-export default App
+export default App;

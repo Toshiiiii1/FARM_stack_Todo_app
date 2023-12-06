@@ -6,7 +6,7 @@ from database import *
 app = FastAPI()
 
 # CORS handle
-origins = ["https://localhost:5173"]
+origins = ["http://localhost:5173"]
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
